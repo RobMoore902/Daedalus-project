@@ -1,0 +1,1403 @@
+<?php
+
+/**
+ * @file
+ * daedalus.install
+ * Created by Dr. Blouin, Justin Joyce and Matthew Irving
+ */
+
+/**
+ * Implementation of hook_schema().
+ *
+ * - Tables prefixed with "dae" for easy managing.
+ *
+ */
+function daedalus_schema() {
+
+  $schema = array();
+
+  $schema['dae_course'] = array(
+    'description' => 'Stores course identification',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies courses',
+      ),
+      'course_code' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 4,
+        'size' => 'normal',
+        'description' => 'Identifies the courses code',
+      ),
+      'course_number' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'length' => 4,
+        'size' => 'normal',
+        'description' => 'Identifies the course number',
+      ),
+      'course_name' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 150,
+        'size' => 'normal',
+        'description' => 'Identifies the course by its title',
+      ),
+      'course' => array(
+        'type' => 'varchar',
+        'length' => 9,
+        'size' => 'normal',
+        'description' => 'Identifies the course name by code and number',
+      ),
+      'mapped' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+        'length' => 1,
+        'size' => 'tiny',
+        'description' => 'Identifies if the course is completed',
+      ),
+      'viewable' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '1',
+        'length' => 1,
+        'size' => 'tiny',
+        'description' => 'Identifies if the course is viewable in the course map',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_course_slo'] = array(
+    'description' => 'Stores course slo relationships',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies course slo relationships',
+      ),
+      'course_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies the course',
+      ),
+      'slo_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies the slo',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_course_alias'] = array(
+    'description' => 'Stores course aliases',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies course aliases',
+      ),
+      'parent_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies the parent course id',
+      ),
+      'alias_code' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 4,
+        'size' => 'normal',
+        'description' => 'Identifies the alias code',
+      ),
+      'alias_number' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'length' => 4,
+        'size' => 'normal',
+        'description' => 'Identifies the alias number',
+      ),
+      'alias_course' => array(
+        'type' => 'varchar',
+        'length' => 9,
+        'size' => 'normal',
+        'description' => 'Identifies the aliase course by the code and number',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_course_exclusions'] = array(
+    'description' => 'Stores course exclusions',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies course exclusions',
+      ),
+      'parent_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'length' => 5,
+        'size' => 'small',
+        'description' => 'Identifies the excluded parent course',
+      ),
+      'exclusion_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'length' => 5,
+        'size' => 'normal',
+        'description' => 'Identifies the course with an exclusion',
+      ),
+      'exclusion_course' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 9,
+        'size' => 'normal',
+        'description' => 'Identifies the course by code and number with an exclusion',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_course_other_prereq'] = array(
+    'description' => 'Stores other prerequisite course information',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies other prerequisite information',
+      ),
+      'course_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies courses with a prerequisited course',
+      ),
+      'prereq' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 100,
+        'size' => 'normal',
+        'description' => 'Stores the other prequisite text',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_course_coreqs'] = array(
+    'description' => 'Stores co-requisite courses',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies co-requisite courses',
+      ),
+      'parent_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'length' => 5,
+        'size' => 'small',
+        'description' => 'Identifies the co-requisite parent course',
+      ),
+      'coreq_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'length' => 5,
+        'size' => 'small',
+        'description' => 'Identifies the course with a co-requisite',
+      ),
+      'coreq_course' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 9,
+        'size' => 'normal',
+        'description' => 'Identifies the course by code and number with a co-requisite',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_prereq_course'] = array(
+    'description' => 'Stores prerequisite courses',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies prerequisite courses',
+      ),
+      'set_id' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'unsigned' => TRUE,
+        'default' => '1',
+        'length' => 7,
+        'size' => 'normal',
+        'description' => 'Identifies sets of prerequisite courses',
+      ),
+      'course_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies courses with a prerequisited course',
+      ),
+      'prereq_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies the prequisite to the course',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_prereq_slo'] = array(
+    'description' => 'Stores prerequisite slos',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies prerequisite slos',
+      ),
+      'target' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies slos with a prerequisite slo',
+      ),
+      'pre_slo' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies the prequisite to the slo',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_slo'] = array(
+    'description' => 'Stores student learning outcomes',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies slos',
+      ),
+      'slo_rank' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => '-1',
+        'length' => 1,
+        'size' => 'tiny',
+        'description' => 'Identifies slo ranking',
+      ),
+      'slo_text' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'normal',
+        'description' => 'Stores the slo description',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_slo_tag'] = array(
+    'description' => 'Stores slo to tag relationships',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies the slo to tag relationship',
+      ),
+      'slo_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies the slo',
+      ),
+      'tag_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies the tag',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_tag'] = array(
+    'description' => 'Stores tags',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies the tag',
+      ),
+      'tag_label' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 100,
+        'size' => 'normal',
+        'description' => 'Stores the tag description',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_term_review_form'] = array(
+    'description' => 'Stores term review forms',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies a term review form',
+      ),
+      'course' => array(
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => NULL,
+        'length' => 160,
+        'size' => 'normal',
+        'description' => 'Identifies the reviewed course',
+      ),
+      'instructor' => array(
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => NULL,
+        'length' => 200,
+        'size' => 'normal',
+        'description' => 'Identifies the review instructor',
+      ),
+      'term' => array(
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'default' => NULL,
+        'length' => 30,
+        'size' => 'normal',
+        'description' => 'Identifies the review term',
+      ),
+      'year' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => NULL,
+        'length' => 10,
+        'size' => 'normal',
+        'description' => 'Identifies the review year',
+      ),
+      'info' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'normal',
+        'description' => 'Identifies any extra review information',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_term_review_ratings'] = array(
+    'description' => 'Stores term review ratings',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies the term review rating',
+      ),
+      'term_review_form_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies the term review',
+      ),
+      'slo' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'description' => 'Stores the slo text',
+      ),
+      'rating' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Stores the review rating',
+      ),
+      'comment' => array(
+        'type' => 'varchar',
+        'length' => 160,
+        'size' => 'normal',
+        'description' => 'Stores a review comment',
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 6,
+        'size' => 'normal',
+        'description' => 'Identifies ',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_valid_course_codes'] = array(
+    'description' => 'Stores valid course codes',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies a course code',
+      ),
+      'course_code' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 4,
+        'size' => 'normal',
+        'description' => 'Stores the course code',
+      ),
+      'department_name' => array(
+        'type' => 'varchar',
+        'length' => 150,
+        'size' => 'normal',
+        'description' => 'Stores the department name ',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_page_help'] = array(
+    'description' => 'Stores page help text',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies a pages help text',
+      ),
+      'page_url' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 50,
+        'size' => 'normal',
+        'description' => 'Identifies the page by url',
+      ),
+      'help_text' => array(
+        'type' => 'blob',
+        'size' => 'normal',
+        'description' => 'Stores the help information',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['dae_settings'] = array(
+    'description' => 'Stores ',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'length' => 11,
+        'size' => 'normal',
+        'description' => 'Identifies ',
+      ),
+      'setting' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 50,
+        'size' => 'normal',
+        'description' => 'Identifies ',
+      ),
+      'description' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'description' => 'Identifies ',
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 7,
+        'size' => 'normal',
+        'description' => 'Identifies ',
+      ),
+      'value' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 150,
+        'size' => 'normal',
+        'description' => 'Identifies ',
+      ),
+      'default_value' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 150,
+        'size' => 'normal',
+        'description' => 'Identifies ',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+
+}
+
+/**
+ * Implementation of hook_install().
+ *
+ * - Installs the daedalus database tables.
+ * - Installs the daedalus menu.
+ * - Installs the daedalus settings.
+ * - Creates the daedalus user types.
+ * - Configures the user permissions.
+ *
+ */
+function daedalus_install() {
+
+  drupal_install_schema('daedalus');
+
+    ////////////////////////////            \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+   //////////////////////////// URL SETTINGS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  ////////////////////////////                \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+  $id = 16;
+  $setting = "browse";
+  $description = "The root url to browse daedalus content.";
+  $type = "url";
+  $value = "daedalus/browse";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 17;
+  $setting = "browse courses";
+  $description = "A child url to browse daedalus course content.";
+  $type = "url";
+  $value = "daedalus/browse/course";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 18;
+  $setting = "browse learning outcomes";
+  $description = "A child url to browse daedalus student learning outcome content.";
+  $type = "url";
+  $value = "daedalus/browse/slo";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 19;
+  $setting = "browse term reviews";
+  $description = "A child url to browse daedaus term review content.";
+  $type = "url";
+  $value = "daedalus/browse/term-review";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 20;
+  $setting = "browse visual maps";
+  $description = "A child url to browse daedalus visual map content.";
+  $type = "url";
+  $value = "daedalus/browse/graphviz";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  // Analyse  ///////////////////////////////////////////////////
+
+  $id = 21;
+  $setting = "analyse";
+  $description = "The root url to analyse daedalus content.";
+  $type = "url";
+  $value = "daedalus/analyse";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 22;
+  $setting = "analyse course";
+  $description = "A child url to analyse daedalus course content.";
+  $type = "url";
+  $value = "daedalus/analyse/course";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 23;
+  $setting = "analyse learning outcomes";
+  $description = "A child url to analyse daedalus student learning outcome content.";
+  $type = "url";
+  $value = "daedalus/analyse/slo";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 24;
+  $setting = "analyse term reviews";
+  $description = "A child url to analyse daedalus term review content.";
+  $type = "url";
+  $value = "daedalus/analyse/term-review";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 25;
+  $setting = "analyse student files";
+  $description = "A child url to analyse magellan student file content.";
+  $type = "url";
+  $value = "daedalus/analyse/student-files";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  // BUILD  /////////////////////////////////////////////////////
+
+  $id = 26;
+  $setting = "build";
+  $description = "The root url to analyse daedalus content.";
+  $type = "url";
+  $value = "daedalus/build";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 27;
+  $setting = "build courses";
+  $description = "A child url to build daedalus course content.";
+  $type = "url";
+  $value = "daedalus/build/course";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 28;
+  $setting = "build course codes";
+  $description = "A child url to build daedalus course code content.";
+  $type = "url";
+  $value = "daedalus/build/course-code";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 29;
+  $setting = "build learning outcomes";
+  $description = "A child url to build daedalus student learning outcome content.";
+  $type = "url";
+  $value = "daedalus/build/slo";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 30;
+  $setting = "build term reviews";
+  $description = "A child url to build daedalus term review content.";
+  $type = "url";
+  $value = "daedalus/build/term-review";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  // Manage  ////////////////////////////////////////////////////
+
+  $id = 33;
+  $setting = "manage";
+  $description = "The root url to manage daedalus content.";
+  $type = "url";
+  $value = "daedalus/manage";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 34;
+  $setting = "manage courses";
+  $description = "A child url to manage daedalus course content.";
+  $type = "url";
+  $value = "daedalus/manage/course";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 35;
+  $setting = "manage course codes";
+  $description = "A child url to manage daedalus course code content.";
+  $type = "url";
+  $value = "daedalus/manage/course-code";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 36;
+  $setting = "manage learning outcomes";
+  $description = "A child url to manage daedalus student learning outcome content.";
+  $type = "url";
+  $value = "daedalus/manage/slo";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 37;
+  $setting = "manage tags";
+  $description = "A child url to manage daedalus tag content.";
+  $type = "url";
+  $value = "daedalus/manage/tags";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 38;
+  $setting = "manage term reviews";
+  $description = "A child url to manage daedalus term review content.";
+  $type = "url";
+  $value = "daedalus/manage/term-review";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 43;
+  $setting = "manage imports/exports";
+  $description = "A child url to manage uploading and downloading of daedalus content.";
+  $type = "url";
+  $value = "daedalus/manage/information";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 44;
+  $setting = "manage settings";
+  $description = "A child url to manage daedalus setting content.";
+  $type = "url";
+  $value = "daedalus/manage/settings";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+
+    ////////////////////////////                \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+   //////////////////////////// BOOLEAN SETTINGS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  ////////////////////////////                    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+  $id = 45;
+  $setting = "title each autocomplete textfield";
+  $description = "Boolean setting to show or hide the title to each hidden autocomplete textfield when they appear.";
+  $type = "bool";
+  $value = "1";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 46;
+  $setting = "show uncovered learning outcome warning";
+  $description = "Boolean setting to show or hide a warning to inform if a course has prerequisite learning outcomes which are not covered in any prerequisite course.";
+  $type = "bool";
+  $value = "1";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 47;
+  $setting = "collapse department page on page load";
+  $description = "Boolean setting used to collapse all the course codes in the manage > course codes page.";
+  $type = "bool";
+  $value = "1";
+  $default_value = $default_value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 48;
+  $setting = "show courses in the browse courses page";
+  $description = "Boolean setting to show or hide linkable courses in the browse daedalus page.";
+  $type = "bool";
+  $value = "1";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 49;
+  $setting = "show table settings in the browse courses page";
+  $description = "Boolean setting to show or hide the browse > courses table settings.";
+  $type = "bool";
+  $value = "0";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 50;
+  $setting = "show tag cloud settings";
+  $description = "Boolean setting to show or hide the tag cloud font and text seperation settings.";
+  $type = "bool";
+  $value = "0";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 51;
+  $setting = "show course codes under the root browse menu";
+  $description = "Boolean setting to show or hide the course codes underneath the root daedalus browse menu.";
+  $type = "bool";
+  $value = "1";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 52;
+  $setting = "neato course map setting";
+  $description = "Boolean setting to switch between the 'neato' and 'dot' graph types for the course map graph.";
+  $type = "bool";
+  $value = "0";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 53;
+  $setting = "neato slo map setting";
+  $description = "Boolean setting to switch between the 'neato' and 'dot' graph types for the learning outcome map graph.";
+  $type = "bool";
+  $value = "0";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+
+    /////////////////////////////              \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+   ///////////////////////////// IMAGE SETTINGS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  /////////////////////////////                  \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+  $module_url = drupal_get_path('module', 'Daedalus');
+
+  $id = 54;
+  $setting = "checkmark";
+  $description = "The path to the term review checkmark image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-check-mark.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 55;
+  $setting = "exclamation mark";
+  $description = "The path to the term review exclamation mark image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-exclamation-mark.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 56;
+  $setting = "question mark2";
+  $description = "The path to the term review question mark image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-question-mark2.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 57;
+  $setting = "question mark";
+  $description = "The path to the hidden help question mark image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-question-mark.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 58;
+  $setting = "computer science logo";
+  $description = "The path to the computer science image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-computer-science.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 59;
+  $setting = "computer science logo small";
+  $description = "The path to the small computer science image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-computer-science-small.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 60;
+  $setting = "mapped identification";
+  $description = "The path to the mapped image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-mapped.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 61;
+  $setting = "unmapped identification";
+  $description = "The path to the unmapped image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-unmapped.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 62;
+  $setting = "goal identification";
+  $description = "The path to the daedalus goal image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-goal.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 63;
+  $setting = "goal legend";
+  $description = "The path to the daedalus goal legend image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-goal-legend.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 64;
+  $setting = "goal space";
+  $description = "The path to the daedalus goal space image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-goal-space.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 65;
+  $setting = "update button";
+  $description = "The path to the daedalus update image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-update.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 66;
+  $setting = "view button";
+  $description = "The path to the daedalus view image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-view.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 67;
+  $setting = "delete button";
+  $description = "The path to the daedalus delete image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-delete.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 68;
+  $setting = "open button";
+  $description = "The path to the daedalus open image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-open.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 69;
+  $setting = "close button";
+  $description = "The path to the daedalus close image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-close.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 70;
+  $setting = "deleted button";
+  $description = "The path to the daedalus deleted image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-deleted.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 71;
+  $setting = "adviser marker";
+  $description = "The path to the daedalus adviser image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-adviser.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 72;
+  $setting = "support marker";
+  $description = "The path to the daedalus support image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-support.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 73;
+  $setting = "daedalus browse image";
+  $description = "The path to the daedalus browse image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-browse.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 74;
+  $setting = "daedalus program image";
+  $description = "The path to the daedalus program image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-program.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 75;
+  $setting = "daedalus homepage";
+  $description = "The path to the daedalus homepage image.";
+  $type = "image";
+  $value = $module_url . "/img/daedalus-homepage.png";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+
+    /////////////////////////////                \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+   ///////////////////////////// INTEGER SETTINGS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  /////////////////////////////                    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+  $id = 76;
+  $setting = "autocomplete iteration";
+  $description = "Integer setting to determine the amount of hidden autocomplete textfields to be created.";
+  $type = "int";
+  $value = 15;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 77;
+  $setting = "graphviz iteration";
+  $description = "Integer setting to append to the graphviz .svg file.";
+  $type = "int";
+  $value = 1;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 78;
+  $setting = "column iteration";
+  $description = "Integer setting to determine how many columns will appear while browsing courses.";
+  $type = "int";
+  $value = 3;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 79;
+  $setting = "learning outcome rank iteration";
+  $description = "Integer setting to determine the depth that the learning outcome rank may achieve.";
+  $type = "int";
+  $value = 10;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 80;
+  $setting = "program iteration";
+  $description = "Integer setting to determine the amount of textfield rows to be created while submitting a new program.";
+  $type = "int";
+  $value = 40;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 81;
+  $setting = "course code length";
+  $description = "Integer setting to determine the number of characters in a course code.";
+  $type = "int";
+  $value = 4;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 82;
+  $setting = "tag cloud max font size";
+  $description = "Integer setting to increase the maximum font size for the tag cloud.";
+  $type = "int";
+  $value = 0;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 83;
+  $setting = "tag cloud height percent";
+  $description = "Integer setting to set the line spacing percentage for the tag cloud.";
+  $type = "int";
+  $value = 160;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 84;
+  $setting = "course name preview length";
+  $description = "Integer setting to determine the amount of characters a course may contain before being cut off.";
+  $type = "int";
+  $value = 50;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 85;
+  $setting = "list size before collapsing";
+  $description = "Integer setting to determine how many items must appear in the analyse page lists before they are collapsed.";
+  $type = "int";
+  $value = 10;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 86;
+  $setting = "student program total";
+  $description = "Integer setting to determine the maximum amount of program forms a student may create.";
+  $type = "int";
+  $value = 3;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 87;
+  $setting = "advising timeout";
+  $description = "Integer setting to determine the maximum amount of time for an advising session.";
+  $type = "int";
+  $value = 120;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 88;
+  $setting = "file duration";
+  $description = "Integer setting to determine the maximum amount of years before a student file becomes deletable.";
+  $type = "int";
+  $value = 5;
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%d','%d')", $id, $setting, $description, $type, $value, $default_value);
+
+
+    /////////////////////////////               \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+   ///////////////////////////// STRING SETTINGS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  /////////////////////////////                   \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+  $id = 89;
+  $setting = "tag seperate character";
+  $description = "The string which seperates tags to allow for multiple tag entry.";
+  $type = "str";
+  $value = ",";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 90;
+  $setting = "tag identify symbol";
+  $description = "The string used to identify a tag in the autocomplete functions.";
+  $type = "str";
+  $value = "#";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 91;
+  $setting = "graphviz path";
+  $description = "The file locations for the dot and neato programs. Example /usr/bin/ or /local/bin/";
+  $type = "str";
+  $value = "";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 92;
+  $setting = "file permissions";
+  $description = "The allowed upload file types for advising. Enter a comma separated string.";
+  $type = "str";
+  $value = "doc, docx, pdf, PDF, txt";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 93;
+  $setting = "course map size";
+  $description = "The comma separated width and height setting to display for a course map. Example 8.5,12";
+  $type = "str";
+  $value = "8.5,12";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+  $id = 94;
+  $setting = "program map size";
+  $description = "The comma separated width and height setting to display for the student program map. Example 9,13";
+  $type = "str";
+  $value = "9,13";
+  $default_value = $value;
+  db_query("INSERT INTO {dae_settings} (id,setting,description,type,value,default_value)
+            VALUES (%d,'%s','%s','%s','%s','%s')", $id, $setting, $description, $type, $value, $default_value);
+
+
+    ///////////////////////////                  \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+   /////////////////////////// CONFIGURE THE MENU \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  ///////////////////////////                      \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+  db_query("INSERT INTO {menu_custom} (menu_name, title, description)
+            VALUES ('menu-daedalus','Daedalus Menu','The menu used by the Daedalus curriculum building module.')");
+
+
+     //////////////////////////                 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    ////////////////////////// CREATE USER TYPES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+   ////////////////////////// & SET PERMISSIONS   \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  //////////////////////////                       \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+  db_query("INSERT INTO {role} (name)
+                 VALUES ('Daedalus Administrator'),
+                        ('Daedalus Curriculum Builder'),
+                        ('Daedalus Instructor'),
+                        ('Daedalus Student')");
+
+  $anon_access_args = "daedalus browse, daedalus browse courses, " .
+          "daedalus browse learning outcomes, daedalus manage courses, " .
+          "daedalus manage learning outcomes, access content";
+
+  $auth_access_args = "daedalus browse, daedalus browse courses, " .
+          "daedalus browse learning outcomes, daedalus manage courses, " .
+          "daedalus manage learning outcomes, access content";
+
+  $admi_access_args = "daedalus analyse, daedalus analyse course, " .
+          "daedalus analyse learning outcomes, daedalus analyse term reviews, " .
+          "daedalus browse, daedalus browse courses, daedalus browse learning outcomes, " .
+          "daedalus browse term reviews, daedalus browse visual maps, " .
+          "daedalus build, daedalus build course codes, daedalus build courses, " .
+          "daedalus build learning outcomes, daedalus build term reviews, " .
+          "daedalus delete course, daedalus delete slo, " .
+          "daedalus delete term reviews, daedalus help edit, daedalus manage, " .
+          "daedalus manage course codes, daedalus manage courses, " .
+          "daedalus manage imports/exports, daedalus manage learning outcomes, " .
+          "daedalus manage tags, daedalus manage term reviews, access content";
+
+  $curr_access_args = "daedalus analyse, daedalus analyse course, " .
+          "daedalus analyse learning outcomes, daedalus analyse term reviews, " .
+          "daedalus browse, daedalus browse courses, daedalus browse learning outcomes, " .
+          "daedalus browse term reviews, daedalus build, daedalus build course codes, " .
+          "daedalus build courses, daedalus build learning outcomes, " .
+          "daedalus build term reviews, daedalus delete course, daedalus delete slo, " .
+          "daedalus delete term reviews, daedalus help edit, daedalus manage, " .
+          "daedalus manage course codes, daedalus manage courses, " .
+          "daedalus manage imports/exports, daedalus manage learning outcomes, " .
+          "daedalus manage tags, daedalus manage term reviews, access content";
+
+  $inst_access_args = "daedalus analyse, daedalus analyse course, " .
+          "daedalus analyse learning outcomes, daedalus analyse term reviews, " .
+          "daedalus browse, daedalus browse courses, daedalus browse learning outcomes, " .
+          "daedalus browse term reviews, daedalus manage courses, " .
+          "daedalus manage learning outcomes, access content";
+
+  $stud_access_args = "daedalus browse, daedalus browse courses, " .
+          "daedalus browse learning outcomes, daedalus manage courses, " .
+          "daedalus manage learning outcomes, access content";
+
+  $anon_rid = db_result(db_query("SELECT rid FROM {role} WHERE name='anonymous user'"));
+  $auth_rid = db_result(db_query("SELECT rid FROM {role} WHERE name='authenticated user'"));
+  $admi_rid = db_result(db_query("SELECT rid FROM {role} WHERE name='Daedalus Administrator'"));
+  $curr_rid = db_result(db_query("SELECT rid FROM {role} WHERE name='Daedalus Curriculum Builder'"));
+  $inst_rid = db_result(db_query("SELECT rid FROM {role} WHERE name='Daedalus Instructor'"));
+  $stud_rid = db_result(db_query("SELECT rid FROM {role} WHERE name='Daedalus Student'"));
+
+  db_query("INSERT INTO {permission} (rid,perm)
+            VALUES (%d,'%s'), (%d,'%s'), (%d,'%s'), (%d,'%s'), (%d,'%s'), (%d,'%s')",
+            $anon_rid, $anon_access_args, $auth_rid, $auth_access_args,
+            $admi_rid, $admi_access_args, $curr_rid, $curr_access_args,
+            $inst_rid, $inst_access_args, $stud_rid, $stud_access_args);
+
+}
+
+/**
+ * Implementation of hook_uninstall().
+ *
+ * - Unnstalls the daedalus database tables.
+ * - Unstalls the daedalus menu.
+ * - Removes the daedalus user types.
+ */
+function daedalus_uninstall() {
+
+  drupal_uninstall_schema('daedalus');
+
+  db_query("DELETE FROM {menu_custom} WHERE menu_name='menu-daedalus'");
+
+  // Prepare to delete the associated access arguments.
+  $admi_rid = db_result(db_query("SELECT rid FROM {role} WHERE name='Daedalus Administrator'"));
+  $curr_rid = db_result(db_query("SELECT rid FROM {role} WHERE name='Daedalus Curriculum Builder'"));
+  $inst_rid = db_result(db_query("SELECT rid FROM {role} WHERE name='Daedalus Instructor'"));
+  $stud_rid = db_result(db_query("SELECT rid FROM {role} WHERE name='Daedalus Student'"));
+
+  db_query("DELETE FROM {role} WHERE rid=%d OR rid=%d OR rid=%d OR rid=%d", $admi_rid, $curr_rid, $inst_rid, $stud_rid);
+
+  db_query("DELETE FROM {users_roles} WHERE rid=%d OR rid=%d OR rid=%d OR rid=%d", $admi_rid, $curr_rid, $inst_rid, $stud_rid);
+
+  db_query("DELETE FROM {permission} WHERE rid=%d OR rid=%d OR rid=%d OR rid=%d", $admi_rid, $curr_rid, $inst_rid, $stud_rid);
+
+}

@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 30
+/projects2/!svn/ver/34/queries
+END
+search.sql
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/projects2/!svn/ver/34/queries/search.sql
+END
+dbcopy.sql
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/projects2/!svn/ver/30/queries/dbcopy.sql
+END

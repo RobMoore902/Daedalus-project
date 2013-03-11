@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/projects2/!svn/ver/56/_resources/daedalus/includes/manage
+END
+daedalus_manage_codes.inc
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/projects2/!svn/ver/28/_resources/daedalus/includes/manage/daedalus_manage_codes.inc
+END
+daedalus_manage_outcomes.inc
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/projects2/!svn/ver/28/_resources/daedalus/includes/manage/daedalus_manage_outcomes.inc
+END
+daedalus_manage_tags.inc
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/projects2/!svn/ver/28/_resources/daedalus/includes/manage/daedalus_manage_tags.inc
+END
+daedalus_manage_settings.inc
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/projects2/!svn/ver/28/_resources/daedalus/includes/manage/daedalus_manage_settings.inc
+END
+daedalus_manage_imports_exports.inc
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/projects2/!svn/ver/28/_resources/daedalus/includes/manage/daedalus_manage_imports_exports.inc
+END
+daedalus_manage_courses.inc
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/projects2/!svn/ver/56/_resources/daedalus/includes/manage/daedalus_manage_courses.inc
+END
+daedalus_manage_menu.inc
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/projects2/!svn/ver/28/_resources/daedalus/includes/manage/daedalus_manage_menu.inc
+END
+daedalus_manage_reviews.inc
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/projects2/!svn/ver/28/_resources/daedalus/includes/manage/daedalus_manage_reviews.inc
+END

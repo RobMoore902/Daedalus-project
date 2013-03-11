@@ -1,0 +1,1287 @@
+// $Id$
+
+/**
+ * @file daedalus.js
+ * Created by Dr. Blouin, Justin Joyce and Matthew Irving
+ */
+
+if ( Drupal.jsEnabled ) {
+
+    $(document).ready(function() {
+
+        /**
+         *  each function() 
+         *  
+         *  class: REMOVABLE
+         *  
+         *  to send http request to remove item from list.
+         *
+         *  Requirements:
+         *      - An anchor tag in the list item with the class removable.
+         *      - An href with the link to the http request to be made.
+         *      - Anchor tag should also have an attribute "message" which
+         *        contains a message for the javascript confirmation message.
+         */
+        $(".removable").each(function() {
+
+                $(this).click(function(event) {
+
+                        // Prevent link (href) from
+                        // being followed through.
+                        event.preventDefault();
+
+                        message = $(this).attr("message");
+
+                        if(confirm(message)) {
+                                $(this).parent().fadeOut(3500);
+                                $.get($(this).attr("href"));
+                        }
+
+                });
+
+        });
+
+
+        /**
+         * each function()
+         * 
+         * class: HIDE-HELP
+         *
+         * Hides all items of class='hide-help'
+         */
+        $(".hide-help").each(function() {
+                if( $(this).attr("is_hidden") == "yes" ) {
+                        $(this).hide();  //hide all the ones marked as hidden
+                }
+        });
+
+        /**
+         * click function()
+         * 
+         * class: SHOW-HELP
+         *
+         * When the button with class='show-help' is clicked, all items of
+         * class='hide-help' have the attribute "is_hidden" set to no if 
+         * already set to yes, and vise versa. Also the button has the class
+         * permanent-opaque added and removed. The use of two different classes
+         * makes it easy to differentiate the click function with a mouse over.
+         */
+        $(".show-help").click(function() {
+
+                if ( $(this).hasClass("permanent-opaque") ) {
+                        $(this).removeClass("permanent-opaque");
+                }
+                else {
+                        $(this).addClass("permanent-opaque");
+                }
+
+                $(".hide-help").each(function() {
+
+                        if ( $(this).attr("is_hidden") == "yes" ) {
+                                $(this).attr("is_hidden","no");    // Change the element to not
+                                $(this).show("slow");              // hidden and show it.
+                        }
+
+                        else if ( $(this).attr("is_hidden") == "no" ) {
+                                $(this).attr("is_hidden","yes");   // Change the element so it
+                                $(this).hide("slow");              // is hidden and hide it.
+                        }
+
+                });
+
+        });
+
+
+        /**
+         * each function()
+         * 
+         * class: SHOW-HELP
+         *
+         * This provies the mouse over 
+         * to opaque the given element.
+         */
+        $(".show-help").each(function() {
+
+                $(this).mouseover(function(){
+                        $(this).addClass("opaque");
+                });
+
+                $(this).mouseout(function(){
+                        $(this).removeClass("opaque");
+                });
+
+        });
+
+
+        /**
+         * mousedown function()
+         *
+         * The following functions show information when 
+         * adding information to a given course or SLO.
+         */
+        $(".show-tag-help").mousedown(function(){
+                alert("Adding Tags:" + 
+                      "\n\t-To enter multiple tags, seperate each tag with a comma" + 
+                      "\n\t-To view the list by a given character enter '*a-z'" + 
+                      "\n\t-To view the complete list of tags enter '*'");
+        });
+
+        $(".show-preslo-help").mousedown(function(){
+                alert("Adding Prerequiste Learing Outcomes:" + 
+                      "\n\t-Search for an existing learning outcome or..." + 
+                      "\n\t-Use the character '#' to search by labels/tags." + 
+                      "\n\t-When a single label/tag is narrowed down:" + 
+                      "\n\t\t-Enter the #lable/#tag to enter all associated outcomes." + 
+                      "\n\t\t-Select a single learning outcome.");
+        });
+
+        $(".show-slo-help").mousedown(function(){
+                alert("Adding Student Learing Outcomes:" + 
+                      "\n\t-Search for an existing learning outcome or..." + 
+                      "\n\t-Use the character '#' to search by labels/tags." + 
+                      "\n\t-When a single label/tag is narrowed down:" + 
+                      "\n\t\t-Enter the #lable/#tag to enter all associated outcomes." + 
+                      "\n\t\t-Select a single learning outcome.");
+        });
+
+        $(".show-pcourse-help").mousedown(function(){
+                alert("Adding Prerequisite Courses:" + 
+                      "\n\t-Search for an existing course in the curriculum." + 
+                      "\n\t-Create a non-course text prerequisite." + 
+                      "\n\t-Use 'OR' to search and add a prerequisite set." + 
+                      "\n\t\t-Only courses within the curriculum may be added to a prerequisite set.");
+        });
+
+        $(".show-covering-help").mousedown(function(){
+                alert("Adding Course Covering Learning Outcome:" + 
+                      "\n\t-Search for an existing course in the curriculum." + 
+                      "\n\t-Create a non-course text prerequisite." + 
+                      "\n\t-Use 'OR' to search and add a prerequisite set." + 
+                      "\n\t\t-Only courses within the curriculum may be added to a prerequisite set.");
+        });
+        
+        
+        /**
+         * each function()
+         * 
+         * class: HIDE-PREREQ-COURSE
+         *
+         * Hide all class="hide-prereq-course" divs which are set to hidden.
+         * Initially all textfields are set to hidden. This function will
+         * uncover one field at a time.
+         *
+         * NOTE: This code is copied XXX times because the functions are
+         *       required XXX separate times in the same script.
+         */
+        $(".hide-prereq-course").each(function() {
+                if( $(this).attr("is_hidden") == "yes" ) {
+                        $(this).hide();  //hide all the ones marked as hidden
+                }
+        });
+
+
+        /**
+         * function() ADD-PREREQ-COURSE
+         *
+         * Designed to work on <div class="add-prereq-course"></div>
+         */
+        $(".add-prereq-course").click(function(event) {
+
+                // Prevent link (href) from
+                // being followed through.
+                event.preventDefault();
+
+                // Boolean indicating if there are still
+                // more hidden elements to uncover.
+                var found = false;
+
+                $(".hide-prereq-course").each(function() {
+                        if ( found == false && $(this).attr("is_hidden") == "yes" ) {
+                                found = true;                       // Change found
+                                $(this).attr("is_hidden","no");     // Un-hide the element
+                                $(this).show("slow");               // Show the element
+                        }
+                });
+
+                // Reset the boolean value for the
+                // remainder of the hidden elements.
+                found = false;
+
+                $(".hide-prereq-course").each(function() {
+                        if ( found == false && $(this).attr("is_hidden") == "yes" ) {
+                                found = true;
+                        }
+                });
+
+                if( found == false ) {
+
+                        // If there are no more hidden itemsto be
+                        // shown hide the button and show alert.
+                        $(this).hide(4000);
+
+                        alert("The maximum amount of additional prerequisite courses has been entered.");
+
+                }
+
+        });
+
+
+        /**
+         * function: HIDE-OTHER-PREREQ
+         * function() ADD-OTHER-PREREQ
+         * COPY 2
+         */
+        $(".hide-covering-course").each(function() {
+                if( $(this).attr("is_hidden") == "yes" ) {
+                        $(this).hide();  //hide all the ones marked as hidden
+                }
+        });
+
+        $(".add-covering-course").click(function(event) {
+
+                // Prevent link (href) from
+                // being followed through.
+                event.preventDefault();
+
+                // Boolean indicating if there are still
+                // more hidden elements to uncover.
+                var found = false;
+
+                $(".hide-covering-course").each(function() {
+                        if ( found == false && $(this).attr("is_hidden") == "yes" ) {
+                                found = true;                       // Change found
+                                $(this).attr("is_hidden","no");     // Un-hide the element
+                                $(this).show("slow");               // Show the element
+                        }
+                });
+
+                // Reset the boolean value for the
+                // remainder of the hidden elements.
+                found = false;
+
+                $(".hide-covering-course").each(function() {
+                        if ( found == false && $(this).attr("is_hidden") == "yes" ) {
+                                found = true;
+                        }
+                });
+
+                if( found == false ) {
+
+                        // If there are no more hidden itemsto be
+                        // shown hide the button and show alert.
+                        $(this).hide(4000);
+
+                        alert("The maximum amount of additional covering courses has been entered.");
+
+                }
+
+        });
+
+
+        /**
+         * function() HIDE-SLO
+         * function() ADD-SLO
+         * COPY 3
+         */
+        $(".hide-slo").each(function() {
+                if( $(this).attr("is_hidden") == "yes" ) {
+                        $(this).hide();  //hide all the ones marked as hidden
+                }
+        });
+
+        $(".add-slo").click(function(event) {
+
+                // Prevent link (href) from
+                // being followed through.
+                event.preventDefault();
+
+                // Boolean indicating if there are still
+                // more hidden elements to uncover.
+                var found = false;
+
+                $(".hide-slo").each(function() {
+                        if ( found == false && $(this).attr("is_hidden") == "yes" ) {
+                                found = true;                       // Change found
+                                $(this).attr("is_hidden","no");     // Un-hide the element
+                                $(this).show("slow");               // Show the element
+                        }
+                });
+
+                // Reset the boolean value for the
+                // remainder of the hidden elements.
+                found = false;
+
+                $(".hide-slo").each(function() {
+                        if ( found == false && $(this).attr("is_hidden") == "yes" ) {
+                                found = true;
+                        }
+                });
+
+                if( found == false ) {
+
+                        // If there are no more hidden itemsto be
+                        // shown hide the button and show alert.
+                        $(this).hide(4000);
+
+                        alert("The maximum amount of additional student learning outcomes has been entered.");
+
+                }
+
+        });
+
+
+        /**
+         * function() HIDE-PREREQ-SLO
+         * function() ADD-PREREQ-SLO
+         * COPY 4
+         */
+        $(".hide-prereq-slo").each(function() {
+                if( $(this).attr("is_hidden") == "yes" ) {
+                        $(this).hide();  //hide all the ones marked as hidden
+                }
+        });
+
+        $(".add-prereq-slo").click(function(event) {
+
+                // Prevent link (href) from
+                // being followed through.
+                event.preventDefault();
+
+                // Boolean indicating if there are still
+                // more hidden elements to uncover.
+                var found = false;
+
+                $(".hide-prereq-slo").each(function() {
+                        if ( found == false && $(this).attr("is_hidden") == "yes" ) {
+                                found = true;                       // Change found
+                                $(this).attr("is_hidden","no");     // Un-hide the element
+                                $(this).show("slow");               // Show the element
+                        }
+                });
+
+                // Reset the boolean value for the
+                // remainder of the hidden elements.
+                found = false;
+
+                $(".hide-prereq-slo").each(function() {
+                        if ( found == false && $(this).attr("is_hidden") == "yes" ) {
+                                found = true;
+                        }
+                });
+
+                if( found == false ) {
+
+                        // If there are no more hidden itemsto be
+                        // shown hide the button and show alert.
+                        $(this).hide(4000);
+
+                        alert("The maximum amount of additional prerequisite learning outcomes has been entered.");
+
+                }
+
+        });
+
+
+        /**
+         * function() HIDDEN-FILE-BUTT
+         * function() ADD-FILE-BUTT
+         *
+         * COPY 5
+         */
+        $(".hidden-file-butt").each(function() {
+                if( $(this).attr("is_hidden") == "yes" ) {
+                        $(this).hide();     //hide all the ones marked as hidden
+                }
+        });
+
+        $(".add-file-butt").click(function(event) {
+                event.preventDefault();
+                var found = false;
+                $(".hidden-file-butt").each(function() {
+                        if ( found == false && $(this).attr("is_hidden") == "yes" ) {
+                                found = true;                       // Change found
+                                $(this).attr("is_hidden","no");     // Un-hide the element
+                                $(this).show("slow");               // Show the element
+                        }
+                });
+                found = false;
+                $(".hidden-file-butt").each(function() {
+                        if ( found == false && $(this).attr("is_hidden") == "yes" ) {
+                                found = true;
+                        }
+                });
+                if( found == false ) {
+                        $(this).hide();
+                        alert("You have entered the maximum amount of files that can be added at one time.");
+                }
+        });
+
+
+        /**
+         * function() REMOVE-DOWNLOAD
+         * 
+         * give the browser 1 second
+         * to open the file location.
+         */
+        $(".remove-download").mousedown(function(){
+                var removeDownload = function() {
+                        $.get($(this).attr("remove_url"));
+                }
+                setTimeout(removeDownload, 1000);
+        });
+
+
+        /**
+         *  function() hide divs with the id "#content-top"
+         */
+        $(function(){
+                var hideStatus = function() {
+                        $("#content-top").slideUp(3000);
+                }
+                setTimeout(hideStatus, 45000);
+        });
+
+
+        /**
+         *  function() to hid a session timeout warning from an advisor
+         *             for a period of pre-determined milliseconds.
+         */
+        $(function(){
+
+                // Get the millisecs attribute which is the amount of milli-
+                // seconds before or after the 10 minute session times out.
+                var millisecs = parseInt($("div.timeout").attr("millisecs"));
+                var i;
+
+                // A function to remove a minute
+                // from the countdown display.
+                var removeMinute = function() {
+                        var minuteVal = parseInt($("a.minutes").html());
+                        minuteVal = minuteVal - 1;
+                        $("a.minutes").text(minuteVal);
+                }
+
+                // Reload the current page.
+                var timeoutUser = function() {
+                        location.reload(true);
+                }
+
+                // If the millisecond value is greater than zero there session
+                // is more than 10 minutes away from timing out. The millisecs
+                // value indicates how many milliseconds remain.
+                if ( millisecs >= 0 ) {
+                        $("div.timeout").hide();    // Hide the warning
+
+                        // Create a function to show the warning, and 
+                        // set a timeout to show it when the session 
+                        // reaches exactly 10 minutes remaining.
+                        var showTimeout = function() {
+                             $("div.timeout").fadeIn(2500);
+                        }
+                        setTimeout(showTimeout, millisecs);
+
+                        // Start the session countdown
+                        for(i=1;i<10;i++) {
+                                setTimeout( removeMinute, (millisecs + (i*60000) ) );
+                        }
+
+                        // Reload the page if the countdown is reached without
+                        // the user adding more time to the session. The session
+                        // will have timed out and the logout script will run.
+                        setTimeout( timeoutUser, (millisecs + (10*60000) ) );
+                }
+
+                // If the millisecond value is less than zero the session
+                // is less than 10 minutes from timing out. Do not hide the
+                // session timeout warning and begin the countdown.
+                if ( millisecs < 0 ) {
+                        millisecs = millisecs + 600000;
+                        var minutes = Math.floor((millisecs / 1000) / 60);
+                        var seconds = Math.floor((millisecs / 1000) % 60);
+                        //alert("The milliseconds > " + millisecs + " minutes remain > " + minutes + " seconds remain > " + seconds);
+                        
+                        setTimeout( removeMinute, (seconds*1000));
+                    
+                        for(i=1;i<minutes;i++) {
+                            //setTimeout( removeMinute, ((seconds*1000) + (i*1000) ) );
+                            setTimeout( removeMinute, ((seconds*1000) + (i*60000) ) );
+                        }
+
+                        // Reload the page if the countdown is reached without
+                        // the user adding more time to the session. The session
+                        // will have timed out and the logout script will run.
+                        setTimeout( timeoutUser, ((seconds*1000) + (minutes*60000) ) );
+                }
+        });
+
+
+        /**
+         * function() LIFT-HELP
+         *
+         * Shows a help alert for class='lift-help'
+         */
+        $(".lift-help").mousedown(function(){
+                alert("LIFT \'n DROP" + 
+                      "\n\t-Select a requirement with the left mouse button." + 
+                      "\n\t-Unselect a requirement with the left mouse button." + 
+                      "\n\t-Selecting a requirement makes elective requirements, in the program form above, dropable." + 
+                      "\n\t-Click to drop the selected requirement into the program form." +
+                      "\n\t-Once completed the untransferred id is placed in the note surrounded by brackets \'<id>\'" +
+                      "\n\t\t-This facilitates the removal of the requirement from the untransferred form.");
+        });
+
+
+        /**
+         * function()
+         * 
+         * 
+         */
+        $(function(){
+
+            var liftId = undefined;
+            var dropId = undefined;
+
+            var liftMark = undefined;
+            var liftTerm = undefined;
+            var liftCourse = undefined;
+            var liftDesc = undefined;
+            var liftEquiv = undefined;
+            var liftNote = undefined;
+
+            $(".liftable").mousedown(function(){
+
+                    if( $(this).hasClass("highlighted") && liftId != undefined ){
+                            $(this).removeClass("highlighted").addClass("odd");
+                            liftId = undefined;
+                    }
+                    else {
+                            liftId = $(this).attr("id");
+
+                            liftMark = $("td#liftMark" + liftId).text();
+                            liftTerm = $("td#liftTerm" + liftId).text();
+                            liftCourse = $("td#liftCourse" + liftId).text();
+                            liftDesc = $("td#liftDesc" + liftId).text();
+                            liftEquiv = $("td#liftEquiv" + liftId).text();
+                            liftNote = $("td#liftNote" + liftId).text();
+
+                            // Remove spaces before and after.
+                            liftMark = jQuery.trim(liftMark);
+                            liftTerm = jQuery.trim(liftTerm);
+                            liftCourse = jQuery.trim(liftCourse);
+                            liftDesc = jQuery.trim(liftDesc);
+                            liftEquiv = jQuery.trim(liftEquiv);
+                            liftNote = jQuery.trim(liftNote);
+
+                            // Add the table value to prevent the item from
+                            // being saved in the students program transfer.
+                            liftNote = "<" + liftId + ">" + liftNote;
+
+                            // Swap highlighted row if another
+                            // row is selected within the table.
+                            $(".liftable").each(function() {
+                                    $(this).removeClass("highlighted").addClass("odd");
+                            });
+
+                            $(this).removeClass("odd").addClass("highlighted");
+                    }
+            });
+
+            $(".liftable").each(function(){
+
+                    $(this).mouseover(function(){
+                            if ( liftId == undefined ){
+                                    $(this).removeClass("odd").addClass("highlighted");
+                            }
+                    });
+
+                    $(this).mouseout(function(){
+                            if ( liftId == undefined ){
+                                    $(this).removeClass("highlighted").addClass("odd");
+                            }
+                    });
+                    
+            });
+
+            $(".dropable").mousedown(function(){
+
+                    dropId = $(this).attr("id");
+                    var noDrop = $(this).attr("nodrop");
+
+                    var d = new Date();
+                    var currentYear = d.getFullYear();
+                    
+                    if(liftId != undefined && noDrop == "true"){
+
+                        // Add the mark by removing all the children from the select 
+                        // html tag by it's tag. Append the blank option then each
+                        // grade. Matching the lifted value add the selected option
+                        $("#edit-mark-" + dropId).children().remove();
+
+                        $("#edit-mark-" + dropId).append('<option value=""></option>');
+
+                        if( liftMark == "A+" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="A+">A+</option>');
+                        }
+
+                        if( liftMark == "A" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="A">A</option>');
+                        }
+
+                        if( liftMark == "A-" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="A-">A-</option>');
+                        }
+
+                        if( liftMark == "B+" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="B+">B+</option>');
+                        }
+
+                        if( liftMark == "B" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="B">B</option>');
+                        }
+
+                        if( liftMark == "B-" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="B-">B-</option>');
+                        }
+
+                        if( liftMark == "C+" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="C+">C+</option>');
+                        }
+
+                        if( liftMark == "C" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="C">C</option>');
+                        }
+
+                        if( liftMark == "C-" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="C-">C-</option>');
+                        }
+
+                        if( liftMark == "D" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="D">D</option>');
+                        }
+
+                        if( liftMark == "F" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="F">F</option>');
+                        }
+
+                        if( liftMark == "INC" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="INC">INC</option>');
+                        }
+
+                        if( liftMark == "PASS" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="PASS">PASS</option>');
+                        }
+
+                        if( liftMark == "TR" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="TR">TR</option>');
+                        }
+
+                        if( liftMark == "W" ) {
+                            $("#edit-mark-" + dropId).append('<option value="' + liftMark + '" selected="TRUE">' + liftMark + '</option>');
+                        }
+                        else {
+                            $("#edit-mark-" + dropId).append('<option value="W">W</option>');
+                        }
+
+                        // Add the timing by removing all the children from the select 
+                        // tag identified by it's id. Append each term option. Upon
+                        // matching the lifted term value, add the selected option.
+                        $("#edit-timing-" + dropId).children().remove();
+
+                        // Year -10 ///////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear - 10)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 10) + '" selected="TRUE">W' + (currentYear - 10) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 10) + '">W' + (currentYear - 10) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear - 10) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 10) + '" selected="TRUE">S' + (currentYear - 10) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 10) + '">S' + (currentYear - 10) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear - 10) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 10) + '" selected="TRUE">F' + (currentYear - 10) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 10) + '">F' + (currentYear - 10) + '</option>');
+                        }
+
+                        // Year -9 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear - 9)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 9) + '" selected="TRUE">W' + (currentYear - 9) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 9) + '">W' + (currentYear - 9) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear - 9) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 9) + '" selected="TRUE">S' + (currentYear - 9) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 9) + '">S' + (currentYear - 9) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear - 9) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 9) + '" selected="TRUE">F' + (currentYear -9) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 9) + '">F' + (currentYear - 9) + '</option>');
+                        }
+
+                        // Year -8 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear - 8)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 8) + '" selected="TRUE">W' + (currentYear - 8) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 8) + '">W' + (currentYear - 8) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear - 8) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 8) + '" selected="TRUE">S' + (currentYear - 8) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 8) + '">S' + (currentYear - 8) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear - 8) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 8) + '" selected="TRUE">F' + (currentYear -8) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 8) + '">F' + (currentYear - 8) + '</option>');
+                        }
+
+                        // Year -7 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear - 7)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 7) + '" selected="TRUE">W' + (currentYear - 7) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 7) + '">W' + (currentYear - 7) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear - 7) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 7) + '" selected="TRUE">S' + (currentYear - 7) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 7) + '">S' + (currentYear - 7) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear - 7) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 7) + '" selected="TRUE">F' + (currentYear -7) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 7) + '">F' + (currentYear - 7) + '</option>');
+                        }
+
+                        // Year -6 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear - 6)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 6) + '" selected="TRUE">W' + (currentYear - 6) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 6) + '">W' + (currentYear - 6) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear - 6) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 6) + '" selected="TRUE">S' + (currentYear - 6) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 6) + '">S' + (currentYear - 6) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear - 6) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 6) + '" selected="TRUE">F' + (currentYear -6) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 6) + '">F' + (currentYear - 6) + '</option>');
+                        }
+
+                        // Year -5 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear - 5)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 5) + '" selected="TRUE">W' + (currentYear - 5) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 5) + '">W' + (currentYear - 5) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear - 5) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 5) + '" selected="TRUE">S' + (currentYear - 5) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 5) + '">S' + (currentYear - 5) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear - 5) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 5) + '" selected="TRUE">F' + (currentYear -5) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 5) + '">F' + (currentYear - 5) + '</option>');
+                        }
+
+                        // Year -4 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear - 4)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 4) + '" selected="TRUE">W' + (currentYear - 4) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 4) + '">W' + (currentYear - 4) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear - 4) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 4) + '" selected="TRUE">S' + (currentYear - 4) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 4) + '">S' + (currentYear - 4) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear - 4) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 4) + '" selected="TRUE">F' + (currentYear -4) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 4) + '">F' + (currentYear - 4) + '</option>');
+                        }
+
+                        // Year -3 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear - 3)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 3) + '" selected="TRUE">W' + (currentYear - 3) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 3) + '">W' + (currentYear - 3) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear - 3) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 3) + '" selected="TRUE">S' + (currentYear - 3) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 3) + '">S' + (currentYear - 3) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear - 3) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 3) + '" selected="TRUE">F' + (currentYear -3) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 3) + '">F' + (currentYear - 3) + '</option>');
+                        }
+
+                        // Year -2 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear - 2)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 2) + '" selected="TRUE">W' + (currentYear - 2) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 2) + '">W' + (currentYear - 2) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear - 2) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 2) + '" selected="TRUE">S' + (currentYear - 2) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 2) + '">S' + (currentYear - 2) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear - 2) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 2) + '" selected="TRUE">F' + (currentYear -2) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 2) + '">F' + (currentYear - 2) + '</option>');
+                        }
+
+                        // Year -1 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear - 1)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 1) + '" selected="TRUE">W' + (currentYear - 1) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear - 1) + '">W' + (currentYear - 1) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear - 1) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 1) + '" selected="TRUE">S' + (currentYear - 1) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear - 1) + '">S' + (currentYear - 1) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear - 1) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 1) + '" selected="TRUE">F' + (currentYear - 1) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear - 1) + '">F' + (currentYear - 1) + '</option>');
+                        }
+
+                        // Current year ////////////////////////////////////////////
+                        if( liftTerm == "W" + currentYear ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + currentYear + '" selected="TRUE">W' + currentYear + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + currentYear + '">W' + currentYear + '</option>');
+                        }
+
+                        if( liftTerm == "S" + currentYear ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + currentYear + '" selected="TRUE">S' + currentYear + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + currentYear + '">S' + currentYear + '</option>');
+                        }
+
+                        if( liftTerm == "F" + currentYear ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + currentYear + '" selected="TRUE">F' + currentYear + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + currentYear + '">F' + currentYear + '</option>');
+                        }
+
+                        // Blank Option ////////////////////////////////////////////
+                        if( liftTerm == "" ) {
+                            $("#edit-timing-" + dropId).append('<option value="" selected="TRUE"></option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value=""></option>');
+                        }
+
+                        // Year + 1 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear + 1)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 1) + '" selected="TRUE">W' + (currentYear + 1) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 1) + '">W' + (currentYear + 1) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear + 1) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 1) + '" selected="TRUE">S' + (currentYear + 1) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 1) + '">S' + (currentYear + 1) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear + 1) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 1) + '" selected="TRUE">F' + (currentYear - 1) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 1) + '">F' + (currentYear + 1) + '</option>');
+                        }
+
+                        // Year + 2 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear + 2)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 2) + '" selected="TRUE">W' + (currentYear + 2) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 2) + '">W' + (currentYear + 2) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear + 2) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 2) + '" selected="TRUE">S' + (currentYear + 2) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 2) + '">S' + (currentYear + 2) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear + 2) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 2) + '" selected="TRUE">F' + (currentYear - 2) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 2) + '">F' + (currentYear + 2) + '</option>');
+                        }
+
+                        // Year + 3 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear + 3)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 3) + '" selected="TRUE">W' + (currentYear + 3) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 3) + '">W' + (currentYear + 3) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear + 3) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 3) + '" selected="TRUE">S' + (currentYear + 3) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 3) + '">S' + (currentYear + 3) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear + 3) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 3) + '" selected="TRUE">F' + (currentYear - 3) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 3) + '">F' + (currentYear + 3) + '</option>');
+                        }
+
+                        // Year + 4 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear + 4)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 4) + '" selected="TRUE">W' + (currentYear + 4) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 4) + '">W' + (currentYear + 4) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear + 4) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 4) + '" selected="TRUE">S' + (currentYear + 4) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 4) + '">S' + (currentYear + 4) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear + 4) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 4) + '" selected="TRUE">F' + (currentYear - 4) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 4) + '">F' + (currentYear + 4) + '</option>');
+                        }
+
+                        // Year + 5 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear + 5)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 5) + '" selected="TRUE">W' + (currentYear + 5) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 5) + '">W' + (currentYear + 5) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear + 5) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 5) + '" selected="TRUE">S' + (currentYear + 5) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 5) + '">S' + (currentYear + 5) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear + 5) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 5) + '" selected="TRUE">F' + (currentYear - 5) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 5) + '">F' + (currentYear + 5) + '</option>');
+                        }
+
+                        // Year + 6 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear + 6)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 6) + '" selected="TRUE">W' + (currentYear + 6) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 6) + '">W' + (currentYear + 6) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear + 6) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 6) + '" selected="TRUE">S' + (currentYear + 6) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 6) + '">S' + (currentYear + 6) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear + 6) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 6) + '" selected="TRUE">F' + (currentYear - 6) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 6) + '">F' + (currentYear + 6) + '</option>');
+                        }
+
+                        // Year + 7 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear + 7)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 7) + '" selected="TRUE">W' + (currentYear + 7) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 7) + '">W' + (currentYear + 7) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear + 7) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 7) + '" selected="TRUE">S' + (currentYear + 7) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 7) + '">S' + (currentYear + 7) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear + 7) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 7) + '" selected="TRUE">F' + (currentYear - 7) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 7) + '">F' + (currentYear + 7) + '</option>');
+                        }
+
+                        // Year + 8 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear + 8)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 8) + '" selected="TRUE">W' + (currentYear + 8) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 8) + '">W' + (currentYear + 8) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear + 8) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 8) + '" selected="TRUE">S' + (currentYear + 8) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 8) + '">S' + (currentYear + 8) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear + 8) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 8) + '" selected="TRUE">F' + (currentYear - 8) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 8) + '">F' + (currentYear + 8) + '</option>');
+                        }
+
+                        // Year + 9 ////////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear + 9)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 9) + '" selected="TRUE">W' + (currentYear + 9) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 9) + '">W' + (currentYear + 9) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear + 9) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 9) + '" selected="TRUE">S' + (currentYear + 9) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 9) + '">S' + (currentYear + 9) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear + 9) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 9) + '" selected="TRUE">F' + (currentYear - 9) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 9) + '">F' + (currentYear + 9) + '</option>');
+                        }
+
+                        // Year + 10 ///////////////////////////////////////////////
+                        if( liftTerm == ("W" + (currentYear + 10)) ) {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 10) + '" selected="TRUE">W' + (currentYear + 10) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="W' + (currentYear + 10) + '">W' + (currentYear + 10) + '</option>');
+                        }
+
+                        if( liftTerm == "S" + (currentYear + 10) ) {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 10) + '" selected="TRUE">S' + (currentYear + 10) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="S' + (currentYear + 10) + '">S' + (currentYear + 10) + '</option>');
+                        }
+
+                        if( liftTerm == "F" + (currentYear + 10) ) {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 10) + '" selected="TRUE">F' + (currentYear - 10) + '</option>');
+                        }
+                        else {
+                            $("#edit-timing-" + dropId).append('<option value="F' + (currentYear + 10) + '">F' + (currentYear + 10) + '</option>');
+                        }
+
+                        // Add the course, if a course was found add this to the
+                        // equivalent course section. Upon submit the course will
+                        // be identified and sorted accordingly.
+                        if(liftCourse){
+                                $("#edit-equivalent-course-" + dropId).attr("value", liftCourse);
+                        }
+                        else{
+                                $("#edit-equivalent-course-" + dropId).attr("value", liftEquiv);
+                        }
+
+                        $("#edit-note-" + dropId).attr("value", liftNote);
+
+                        $(".liftable").each(function(){
+                                if( $(this).attr("id") == liftId ){
+                                        $(this).fadeOut(1500);
+                                }
+                        });
+
+                        $(this).removeClass("highlighted-dropable").addClass("odd");
+
+                        $(this).removeAttr("nodrop");
+
+                        liftId = dropId = undefined;
+
+                    }
+
+            });
+
+            $(".dropable").each(function() {
+
+                    $(this).mouseover(function(){
+                            if ( liftId != undefined && $(this).attr("nodrop") == "true" ){
+                                    $(this).removeClass("odd").addClass("highlighted-dropable");
+                            }
+                    });
+
+                    $(this).mouseout(function(){
+                            if ( liftId != undefined && $(this).attr("nodrop") == "true" ){
+                                    $(this).removeClass("highlighted-dropable").addClass("odd");
+                            }
+                    });
+
+            });
+
+        });
+        
+        // Get the initial values from the server
+        var hourVal = parseInt($("div#hour").html());
+        var minuteVal = parseInt($("div#minute").html());
+        var secondVal = parseInt($("div#second").html());
+        var secondDisplay, minuteDisplay, hourDisplay;
+//alert("Hour " + hourVal + " Min " + minuteVal + " Sec " + secondVal);
+        setInterval(function(){
+
+            if(secondVal == 59){
+                secondVal = -1;
+                if(minuteVal < 59){
+                    minuteVal = minuteVal + 1;
+                    minuteDisplay = minuteVal;
+                    if(minuteDisplay < 10){
+                        minuteDisplay = "0" + minuteDisplay;
+                    }
+                    $('div#minute').text(minuteDisplay);
+                }
+                else {
+                    minuteVal = 0;
+                    $('div#minute').text("00");
+                    hourVal = hourVal + 1;
+                    hourDisplay = hourVal;
+                    if(hourDisplay < 10){
+                        hourDisplay = "0" + hourDisplay;
+                    }
+                    $('div#hour').text(hourDisplay);
+                }
+            }
+            secondVal = secondVal + 1;
+            secondDisplay = secondVal;
+            if(secondDisplay < 10){
+                secondDisplay = "0" + secondDisplay;
+            }
+            $('div#second').text(secondDisplay);
+        }, 1000);
+
+    });
+
+}

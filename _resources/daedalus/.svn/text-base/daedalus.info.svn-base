@@ -1,0 +1,6 @@
+name = Daedalus
+description = Manages curriculum mapping.
+core = 6.x
+
+package = "Daedalus - Curriculum mapping"
+dependencies[] = menu

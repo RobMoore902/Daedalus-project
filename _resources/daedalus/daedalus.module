@@ -1,0 +1,458 @@
+<?php
+
+/**
+ * @file
+ * daedalus.module
+ * Created by Dr. Blouin, Justin Joyce and Matthew Irving
+ */
+
+
+// Include the Daedalus functions.
+require_once('includes/daedalus_functions.php');
+
+
+/**
+ * Implementation of the hook_init.
+ * The items here are loaded for each page.
+ */
+function daedalus_init() {
+
+  // Include the Daedalus JavaScript file, the java script here
+  // is used on each and every single page in the Daedalus module.
+  drupal_add_js(drupal_get_path('module', 'daedalus') . '/javascript/daedalus.js');
+
+}
+
+
+/**
+ * Implementation of the hook_perm().
+ *
+ * @return string
+ *  the list of permissions
+ */
+function daedalus_perm() {
+
+  $permissions = array(
+
+    // PROGRAM
+    'magellan program',
+    'magellan program forms',
+    'magellan program map',
+    'magellan program strengths',
+    'magellan program nextstep',
+    'magellan program goal',
+
+    // ADVISE
+    'magellan advise',
+
+    // SUPPORT
+    'magellan support',
+
+    // BROWSE
+    'daedalus browse',
+    'daedalus browse courses',
+    'daedalus browse visual maps',
+    'daedalus browse term reviews',
+    'daedalus browse learning outcomes',
+
+    // ANALYSE
+    'daedalus analyse',
+    'daedalus analyse course',
+    'daedalus analyse learning outcomes',
+    'daedalus analyse term reviews',
+    'daedalus analyse student files',
+
+    // BUILD
+    'daedalus build',
+    'daedalus build courses',
+    'daedalus build course codes',
+    'daedalus build learning outcomes',
+    'daedalus build term reviews',
+    'magellan build programs',
+    'magellan build goals',
+
+    // MANAGE
+    'daedalus manage',
+    'daedalus manage courses',
+    'daedalus manage course codes',
+    'daedalus manage learning outcomes',
+    'daedalus manage tags',
+    'daedalus manage term reviews',
+    'magellan manage programs',
+    'magellan manage student',
+    'magellan manage session history',
+    'magellan manage goals',
+    'daedalus manage imports/exports',
+    'daedalus manage settings',
+
+    // DELETE
+    'daedalus delete slo',
+    'daedalus delete course',
+    'daedalus delete term reviews',
+
+    // HELP
+    'daedalus help edit',
+
+  );
+
+  return $permissions;
+
+}
+
+
+/**
+ * Implementation of hook_menu().
+ *
+ * @return array
+ *  the array of menu items.
+ */
+function daedalus_menu() {
+
+  $weight = array(); $items = array();
+  $weight['browse'] = 1;
+  $weight['analyse'] = 10;
+  $weight['build'] = 20;
+  $weight['manage'] = 30;
+
+  ////////////////////////////// BROWSE //////////////////////////////
+  $items[daedalus_get_setting('browse')] = array(
+    'title' => 'Browse',
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_browse_page',
+    'access arguments' => array('daedalus browse'),
+    'file' => 'includes/browse/daedalus_browse_menu.inc',
+    'weight' => $weight['browse'],
+  );
+
+  $items[daedalus_get_setting('browse courses')] = array(
+    'title' => t('Courses'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_browse_courses_page',
+    'access arguments' => array('daedalus browse courses'),
+    'file' => 'includes/browse/daedalus_browse_courses.inc',
+    'weight' => $weight['browse']+1,
+  );
+
+  // Displays the departments underneath the Browse->Courses menu item
+  if (daedalus_get_setting('show course codes under the root browse menu')) {
+
+    $result = db_query("SELECT DISTINCT course_code
+      FROM {dae_course} ORDER BY course_code");
+
+    while ($row = db_fetch_array($result)) {
+
+      $items[daedalus_get_setting('browse courses') . '/' . $row['course_code']] = array(
+        'title' => $row['course_code'],
+        'menu_name' => 'menu-daedalus',
+        'page callback' => 'daedalus_browse_courses_page',
+        'access arguments' => array('daedalus browse courses'),
+        'file' => 'includes/browse/daedalus_browse_courses.inc',
+        'weight' => $weight['browse']+2,
+      );
+
+    }
+
+    if (db_result(db_query("SELECT COUNT(*) FROM {dae_course}"))) {
+
+      $items[daedalus_get_setting('browse courses') . '/unmapped'] = array(
+        'title' => 'Browse Incomplete',
+        'menu_name' => 'menu-daedalus',
+        'page callback' => 'daedalus_browse_courses_page',
+        'access arguments' => array('daedalus browse courses'),
+        'file' => 'includes/browse/daedalus_browse_courses.inc',
+        'weight' => $weight['browse']+2,
+      );
+
+    }
+
+  }
+
+  $items[daedalus_get_setting('browse learning outcomes')] = array(
+    'title' => t('Learning Outcomes'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_browse_outcomes_page',
+    'access arguments' => array('daedalus browse learning outcomes'),
+    'file' => 'includes/browse/daedalus_browse_outcomes.inc',
+    'weight' => $weight['browse']+3,
+  );
+
+  $items[daedalus_get_setting('browse term reviews')] = array(
+    'title' => t('Term Reviews'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_browse_review_page',
+    'access arguments' => array('daedalus browse term reviews'),
+    'file' => 'includes/browse/daedalus_browse_reviews.inc',
+    'weight' => $weight['browse']+4,
+  );
+
+  $items[daedalus_get_setting('browse visual maps')] = array(
+    'title' => t('Visual Maps'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_browse_graphviz_page',
+    'access arguments' => array('daedalus browse visual maps'),
+    'file' => 'includes/browse/daedalus_browse_graphviz.inc',
+    'weight' => $weight['browse']+5,
+  );
+
+  ////////////////////////////// Analyse //////////////////////////////
+  $items[daedalus_get_setting('analyse')] = array(
+    'title' => 'Analyse',
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_analyse_page',
+    'access arguments' => array('daedalus analyse'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'includes/analyze/daedalus_analyze_menu.inc',
+    'weight' => $weight['analyse'],
+  );
+
+  $items[daedalus_get_setting('analyse course')] = array(
+    'title' => t('Courses'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_analyse_page',
+    'access arguments' => array('daedalus analyse course'),
+    'file' => 'includes/analyze/daedalus_analyze_menu.inc',
+    'weight' => $weight['analyse']+1,
+  );
+
+  $items[daedalus_get_setting('analyse learning outcomes')] = array(
+    'title' => t('Learning Outcomes'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_analyse_page',
+    'access arguments' => array('daedalus analyse learning outcomes'),
+    'file' => 'includes/analyze/daedalus_analyze_menu.inc',
+    'weight' => $weight['analyse']+2,
+  );
+
+  $items[daedalus_get_setting('analyse term reviews')] = array(
+    'title' => t('Term Reviews'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_analyse_page',
+    'access arguments' => array('daedalus analyse term reviews'),
+    'file' => 'includes/analyze/daedalus_analyze_menu.inc',
+    'weight' => $weight['analyse']+3,
+  );
+
+  if (module_exists('magellan')) {
+
+    $items[daedalus_get_setting('analyse student files')] = array(
+      'title' => t('Student Files'),
+      'menu_name' => 'menu-daedalus',
+      'page callback' => 'daedalus_analyse_page',
+      'access arguments' => array('daedalus analyse student files'),
+      'file' => 'includes/analyze/daedalus_analyze_menu.inc',
+      'weight' => $weight['analyse']+4,
+    );
+
+  }
+
+  ////////////////////////////// Build //////////////////////////////
+  $items[daedalus_get_setting('build')] = array(
+    'title' => 'Build',
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_build_page',
+    'access arguments' => array('daedalus build'),
+    'file' => 'includes/build/daedalus_build_menu.inc',
+    'weight' => $weight['build'],
+  );
+
+  $items[daedalus_get_setting('build courses')] = array(
+    'title' => t('Courses'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_build_courses_page',
+    'access arguments' => array('daedalus build courses'),
+    'file' => 'includes/build/daedalus_build_courses.inc',
+    'weight' => $weight['build']+1,
+  );
+
+  $items[daedalus_get_setting('build course codes')] = array(
+    'title' => t('Course Codes'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_build_course_codes_page',
+    'access arguments' => array('daedalus build course codes'),
+    'file' => 'includes/build/daedalus_build_codes.inc',
+    'weight' => $weight['build']+2,
+  );
+
+  $items[daedalus_get_setting('build learning outcomes')] = array(
+    'title' => t('Learning Outcomes'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_build_outcomes_page',
+    'access arguments' => array('daedalus build learning outcomes'),
+    'file' => 'includes/build/daedalus_build_outcomes.inc',
+    'weight' => $weight['build']+3,
+  );
+
+  $items[daedalus_get_setting('build term reviews')]=array(
+    'title' => t('Term Reviews'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_build_reviews_page',
+    'access arguments' => array('daedalus build term reviews'),
+    'file' => 'includes/build/daedalus_build_reviews.inc',
+    'weight' => $weight['build']+4,
+  );
+
+  ////////////////////////////// MANAGE //////////////////////////////
+  $items[daedalus_get_setting('manage')] = array(
+    'title' => 'Manage',
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_manage_page',
+    'access arguments' => array('daedalus manage'),
+    'file' => 'includes/manage/daedalus_manage_menu.inc',
+    'weight' => $weight['manage'],
+  );
+
+  $items[daedalus_get_setting('manage courses')] = array(
+    'title' => t('Courses'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_manage_courses_page',
+    'access arguments' => array('daedalus manage courses'),
+    'file' => 'includes/manage/daedalus_manage_courses.inc',
+    'weight' => $weight['manage']+1,
+  );
+
+  $items[daedalus_get_setting('manage course codes')] = array(
+    'title' => t('Course Codes'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_manage_codes_page',
+    'access arguments' => array('daedalus manage course codes'),
+    'file' => 'includes/manage/daedalus_manage_codes.inc',
+    'weight' => $weight['manage']+2,
+  );
+
+  $items[daedalus_get_setting('manage learning outcomes')] = array(
+    'title' => t('Learning Outcomes'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_manage_outcomes_page',
+    'access arguments' => array('daedalus manage learning outcomes'),
+    'file' => 'includes/manage/daedalus_manage_outcomes.inc',
+    'weight' => $weight['manage']+3,
+  );
+
+  $items[daedalus_get_setting('manage tags')] = array(
+    'title' => t('Tags'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_manage_tags_page',
+    'access arguments' => array('daedalus manage tags'),
+    'file' => 'includes/manage/daedalus_manage_tags.inc',
+    'weight' => $weight['manage']+4,
+  );
+
+  $items[daedalus_get_setting('manage term reviews')] = array(
+    'title' => t('Term Reviews'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_manage_reviews_page',
+    'access arguments' => array('daedalus manage term reviews'),
+    'file' => 'includes/manage/daedalus_manage_reviews.inc',
+    'weight' => $weight['manage']+5,
+  );
+
+  $items[daedalus_get_setting('manage imports/exports')] = array(
+    'title' => t('Imports/Exports'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_manage_information_page',
+    'access arguments' => array('daedalus manage imports/exports'),
+    'file' => 'includes/manage/daedalus_manage_imports_exports.inc',
+    'weight' => $weight['manage']+9,
+  );
+
+  $items[daedalus_get_setting('manage settings')] = array(
+    'title' => t('Daedalus Settings'),
+    'menu_name' => 'menu-daedalus',
+    'page callback' => 'daedalus_manage_settings_page',
+    'access arguments' => array('daedalus manage settings'),
+    'file' => 'includes/manage/daedalus_manage_settings.inc',
+    'weight' => $weight['manage']+10,
+  );
+
+  ////////////////////////// Autocomplete Functions //////////////////////////
+  $items['autocomp/advisor'] = array(
+    'title' => t('Autocomplete'),
+    'page callback' => 'daedalus_autocomplete_advisor',
+    'access arguments' => array('access content'),
+    'file' => 'includes/autocomplete/daedalus_auto_advisor.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['autocomp/support'] = array(
+    'title' => t('Autocomplete'),
+    'page callback' => 'daedalus_autocomplete_support',
+    'access arguments' => array('access content'),
+    'file' => 'includes/autocomplete/daedalus_auto_support.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['autocomp/student'] = array(
+    'title' => t('Autocomplete'),
+    'page callback' => 'daedalus_autocomplete_student',
+    'access arguments' => array('access content'),
+    'file' => 'includes/autocomplete/daedalus_auto_student.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['autocomp/description'] = array(
+    'title' => t('Autocomplete'),
+    'page callback' => 'daedalus_autocomplete_description',
+    'access arguments' => array('access content'),
+    'file' => 'includes/autocomplete/daedalus_auto_description.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['autocomp/coursecode'] = array(
+    'title' => t('Autocomplete'),
+    'page callback' => 'daedalus_autocomplete_coursecode',
+    'access arguments' => array('access content'),
+    'file' => 'includes/autocomplete/daedalus_auto_code.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['autocomp/multiplecodes'] = array(
+    'title' => t('Autocomplete'),
+    'page callback' => 'daedalus_autocomplete_multiplecodes',
+    'access arguments' => array('access content'),
+    'file' => 'includes/autocomplete/daedalus_auto_multicode.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['autocomp/program'] = array(
+    'title' => t('Autocomplete'),
+    'page callback' => 'daedalus_autocomplete_program',
+    'access arguments' => array('access content'),
+    'file' => 'includes/autocomplete/daedalus_auto_program.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['autocomp/course'] = array(
+    'title' => t('Autocomplete'),
+    'page callback' => 'daedalus_autocomplete_course',
+    'access arguments' => array('access content'),
+    'file' => 'includes/autocomplete/daedalus_auto_course.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['autocomp/precourse'] = array(
+    'title' => t('Autocomplete'),
+    'page callback' => 'daedalus_autocomplete_prereq_course',
+    'access arguments' => array('access content'),
+    'file' => 'includes/autocomplete/daedalus_auto_precourse.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['autocomp/slo'] = array(
+    'title' => t('Autocomplete'),
+    'page callback' => 'daedalus_autocomplete_slo',
+    'access arguments' => array('access content'),
+    'file' => 'includes/autocomplete/daedalus_auto_slo.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['autocomp/tag'] = array(
+    'title' => t('Autocomplete'),
+    'page callback' => 'daedalus_autocomplete_tag',
+    'access arguments' => array('access content'),
+    'file' => 'includes/autocomplete/daedalus_auto_tag.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+
+}

@@ -1,0 +1,14 @@
+digraph Constellation {
+size="10,13"
+ course79 [shape=box, style="rounded,filled", label="STAT 2060", URL="/STAT/2060", fontsize=9];
+ course33 [shape=box, style="rounded", label="MATH 1000", URL="/MATH/1000", fontsize=7, height=0.4, width=0.6];
+ course24 [shape=box, style="rounded", label="CSCI 3151" URL="/CSCI/3151" fontsize=7, height=0.4, width=0.6];
+ course29 [shape=box, style="rounded", label="CSCI 3171" URL="/CSCI/3171" fontsize=7, height=0.4, width=0.6];
+ course114 [shape=box, style="rounded", label="CSCI 4176" URL="/CSCI/4176" fontsize=5, height=0.35, width=0.5];
+ course80 [shape=box, style="rounded", label="CSCI 4180" URL="/CSCI/4180" fontsize=7, height=0.4, width=0.6];
+ course33 -> course79 [style="setlinewidth(2)"];
+ course79 -> course24 [style="setlinewidth(2)"];
+ course79 -> course29 [style="setlinewidth(2)"];
+ course29 -> course114 [style="setlinewidth(1)"];
+ course79 -> course80 [style="setlinewidth(2)"];
+}
